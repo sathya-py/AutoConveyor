@@ -1,0 +1,47 @@
+# Core dependencies
+python-dotenv            # Manage environment variables
+watchdog                 # Monitor file system changes
+tqdm                     # Progress bars for CLI feedback
+
+# DaVinci Resolve API
+blackmagic-sdk           # Blackmagic DaVinci Resolve scripting SDK (ensure correct version)
+
+# AI-Based Enhancements
+opencv-python            # Image processing for AI-based scene color grading
+numpy                    # Numerical operations (required for OpenCV & AI models)
+torch                    # PyTorch for deep learning-based color grading
+torchvision              # Image transformations for AI model
+mediapipe                # Potential AI-based scene segmentation
+tensorflow               # Alternative AI processing for future enhancements
+
+# Video Processing & Automation
+ffmpeg-python            # FFmpeg wrapper for additional video operations
+moviepy                  # Video editing and compositing
+imageio[ffmpeg]          # Reading/writing video frames
+pydub                    # Audio processing (if needed)
+mutagen                  # Metadata handling for audio/video files
+
+# YouTube API Integration
+google-auth              # Authentication for Google APIs
+google-auth-oauthlib     # OAuth handling for YouTube API
+google-auth-httplib2     # HTTP transport for Google APIs
+google-api-python-client # Google API client (for YouTube uploads)
+
+# Multithreading & Performance
+concurrent-log-handler   # Thread-safe logging
+asyncio                  # Async event handling
+threadpoolctl            # Efficient CPU-bound threading
+joblib                   # Parallel processing
+
+# Error Handling & Logging
+loguru                   # Advanced logging framework
+retry                    # Automatic retry for failed API calls
+
+# Configuration & Serialization
+pydantic                 # Data validation & config management
+PyYAML                   # YAML parsing (alternative config support)
+json5                    # JSON parsing with comments support
+
+# Misc Utilities
+rich                     # Rich terminal formatting
+setuptools               # Package management

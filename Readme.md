@@ -104,6 +104,17 @@ Modify `config/config.json` to customize settings:
 }
 ```
 
+## 📌 Breakdown of Key Components:
+
+Core Dependencies – Environment handling, CLI progress, file monitoring.
+DaVinci Resolve API – Blackmagic SDK (ensure correct installation).
+AI-Based Enhancements – PyTorch, OpenCV, TensorFlow, MediaPipe for scene-based auto color grading.
+Video Processing & Automation – FFmpeg, MoviePy, Pydub for handling video & audio processing.
+YouTube API Integration – Google API client for automated uploads with metadata enrichment.
+Multithreading & Performance – Threadpoolctl, Joblib, AsyncIO to support parallel processing.
+Error Handling & Logging – Loguru, Retry for logging & failure recovery.
+Configuration & Serialization – Pydantic, PyYAML, JSON5 for flexible configuration.
+
 ---
 
 ## 📊 Logging & Error Handling
