@@ -115,6 +115,11 @@ Multithreading & Performance – Threadpoolctl, Joblib, AsyncIO to support paral
 Error Handling & Logging – Loguru, Retry for logging & failure recovery.
 Configuration & Serialization – Pydantic, PyYAML, JSON5 for flexible configuration.
 
+# DaVinci Resolve API Setup
+
+Blackmagic SDK must be manually installed. Download it from:
+[https://www.blackmagicdesign.com/developer/](https://www.blackmagicdesign.com/developer/)
+
 ---
 
 ## 📊 Logging & Error Handling
