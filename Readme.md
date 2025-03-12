@@ -2,7 +2,7 @@
 
 ## 📌 Overview
 
-AutoConveyor is a fully automated **video processing pipeline** that integrates with **DaVinci Resolve 19** for video editing, color grading, and rendering, followed by **automated uploads to YouTube**.
+AutoConveyor is a fully automated **video processing pipeline** that integrates with **DaVinci Resolve 19** for video editing, color grading, and rendering, followed by **automated uploads to YouTube**. This project is still in progress...
 
 It is **modular, scalable, and future-ready**, supporting **multithreading, checkpointing, automated tagging, metadata enrichment, and AI-based scene color grading**.
 
