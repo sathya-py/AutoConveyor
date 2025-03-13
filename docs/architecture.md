@@ -1,23 +1,47 @@
-# **AutoConveyor – Architecture Document**
-
-## **1. Overview**
-
-**AutoConveyor** is an automated **video processing pipeline** that integrates with **DaVinci Resolve 19** for editing, color grading, and rendering, followed by automated uploads to **YouTube**. It is designed to be **modular, scalable, and adaptable** for future updates and improvements.
+# **AutoConveyor – Final Architecture Document**
 
 ---
 
-## **2. Clean Code Architecture**
+## **1. Overview**
 
-AutoConveyor follows **Clean Code Architecture** to ensure **separation of concerns, maintainability, and extensibility**. The system is structured into distinct layers:
+**AutoConveyor** is an **automated video processing pipeline** that integrates with **DaVinci Resolve 19+** for **timeline creation, editing, color grading, and rendering**, followed by **automated YouTube uploads** with **AI-driven metadata enrichment**.
 
-### **2.1 Layered Design**
+This system is built using a **Hybrid Modular-Layered Architecture**, combining:
 
-| **Layer**                     | **Responsibility**                                                                     |
-| ----------------------------- | -------------------------------------------------------------------------------------- |
-| **Application Layer**         | Manages configurations, execution flow, and user interaction.                          |
-| **Domain Layer**              | Core business logic – video processing, tracking, and uploading.                       |
-| **Infrastructure Layer**      | Interfaces with external APIs (DaVinci Resolve, YouTube) and monitors the file system. |
-| **Framework & Drivers Layer** | Background execution, logging, error handling, and resilience mechanisms.              |
+- **Modular Structure** for independent, replaceable components (e.g., `monitor`, `processing`, `upload`).
+- **Layered Separation** inside modules to ensure clean-code, maintainability, and scalability.
+- **Centralized Logging, Error Handling & Testing** to ensure reliability and debugging efficiency.
+- **Scripts for automation** to streamline execution and maintenance.
+
+---
+
+## **2. Hybrid Architecture Design**
+
+Each **module** follows a **layered design** internally while remaining loosely coupled with other modules.
+
+### **2.1 Modules**
+
+| **Module**       | **Responsibility**                                                               |
+| ---------------- | -------------------------------------------------------------------------------- |
+| **Monitor**      | Watches directories, detects new files, triggers processing.                     |
+| **Processing**   | Handles timeline creation, editing, rendering via DaVinci Resolve API.           |
+| **AI Engine**    | Enhances videos with **scene detection, auto color grading, metadata tagging**.  |
+| **Upload**       | Automates YouTube uploads, manages retries, and schedules posts.                 |
+| **Framework**    | Manages **logging, error handling, multithreading, checkpointing, and testing**. |
+| **Config & CLI** | Handles **user configuration, CLI commands, and API interactions**.              |
+| **Scripts**      | Automation scripts for batch processing, cleanup, and system maintenance.        |
+
+---
+
+### **2.2 Layered Structure inside Modules**
+
+Each module follows a **three-layered structure**:
+
+| **Layer**                | **Responsibility**                                                            |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| **Application Layer**    | Controls execution, workflows, and high-level interactions.                   |
+| **Domain Layer**         | Contains business logic (e.g., video processing, AI tagging).                 |
+| **Infrastructure Layer** | Manages external integrations (DaVinci Resolve API, YouTube API, filesystem). |
 
 ---
 
@@ -26,118 +50,128 @@ AutoConveyor follows **Clean Code Architecture** to ensure **separation of conce
 ```plaintext
 📂 AutoConveyor/
 │── 📂 src/                      # Source Code
-│   │── 📂 application/           # Application Layer
-│   │   │── main.py              # Entry point of the application
-│   │   │── config_manager.py     # Handles system configurations
+│   │── 📂 monitor/               # File Monitoring Module
+│   │   │── application/
+│   │   │   │── monitor_service.py   # Starts and manages monitoring process
+│   │   │── domain/
+│   │   │   │── file_tracker.py      # Detects new files, triggers processing
+│   │   │── infrastructure/
+│   │   │   │── fs_watcher.py        # Uses watchdog to track file system events
 │   │
-│   │── 📂 domain/                # Business Logic (Video Processing)
-│   │   │── processor.py          # Video processing with DaVinci Resolve API
-│   │   │── uploader.py           # YouTube upload logic
-│   │   │── progress_tracker.py   # Tracks job progress
-│   │   │── color_grader.py       # AI-based Scene-Based Color Grading
-│   │   │── metadata_manager.py   # Automated tagging & metadata enrichment
+│   │── 📂 processing/            # Video Processing Module
+│   │   │── application/
+│   │   │   │── process_manager.py   # Manages video processing workflow
+│   │   │── domain/
+│   │   │   │── resolve_editor.py    # Handles timeline, editing, and rendering
+│   │   │── infrastructure/
+│   │   │   │── resolve_api.py       # Interface with DaVinci Resolve API
 │   │
-│   │── 📂 infrastructure/        # External System Interfaces
-│   │   │── file_watcher.py       # Monitors new video files
-│   │   │── resolve_api.py        # Connects to DaVinci Resolve
-│   │   │── youtube_api.py        # Manages YouTube API integration
+│   │── 📂 ai_engine/              # AI Enhancements Module
+│   │   │── application/
+│   │   │   │── ai_service.py      # AI-driven operations manager
+│   │   │── domain/
+│   │   │   │── scene_detector.py  # Scene change detection
+│   │   │   │── color_grader.py    # Auto color grading logic
+│   │   │── infrastructure/
+│   │   │   │── ai_models.py       # Pre-trained models for video analysis
 │   │
-│   │── 📂 framework/             # System Execution and Logging
-│   │   │── background_worker.py  # Runs as a daemon process
-│   │   │── error_handler.py      # Handles exceptions & retries
-│   │   │── checkpoint_manager.py # Checkpoint system for recovery
-│   │   │── logger.py             # Logs system activities
+│   │── 📂 upload/                # YouTube Upload Module
+│   │   │── application/
+│   │   │   │── upload_manager.py   # Manages upload process
+│   │   │── domain/
+│   │   │   │── metadata_generator.py  # Creates video titles, descriptions, tags
+│   │   │── infrastructure/
+│   │   │   │── youtube_api.py     # Handles API interactions
+│   │
+│   │── 📂 framework/              # System Execution, Logging, Errors & Testing
+│   │   │── logger.py              # Centralized logging
+│   │   │── error_handler.py       # Exception handling, retry mechanisms
+│   │   │── checkpoint_manager.py  # Failure recovery checkpoints
+│   │   │── background_worker.py   # Manages multi-threading
+│   │   │── test_runner.py         # Runs all unit and integration tests
+│   │
+│   │── 📂 config/                 # Configuration & CLI
+│   │   │── config_manager.py      # Reads and writes config settings
+│   │   │── cli.py                 # Command-line interface
 │
-│── 📂 config/                    # Configuration Files
-│   │── config.json               # User-defined settings
+│── 📂 scripts/                    # Automation Scripts
+│   │── cleanup.py                 # Deletes old files & logs
+│   │── batch_process.py           # Automates batch processing
+│   │── reprocess_failed.py        # Re-runs failed jobs
 │
-│── 📂 logs/                      # Logging directory
-│   │── process_log.log           # Log file
+│── 📂 logs/                       # Logs & Error Tracking
+│   │── auto_conveyor.log          # Main system logs
+│   │── error.log                  # Error logs
+│   │── test_reports.log           # Logs test results
 │
-│── 📂 docs/                      # Documentation
-│   │── Architecture_Document.md  # This file
-│   │── README.md                 # GitHub ReadMe
+│── 📂 tests/                      # Unit & Integration Testing
+│   │── test_monitor.py            # Tests monitoring logic
+│   │── test_processing.py         # Tests video processing
+│   │── test_ai_engine.py          # Tests AI-based features
+│   │── test_upload.py             # Tests YouTube uploads
 │
-│── requirements.txt              # Python dependencies
-│── setup.py                      # Installation script
-│── .gitignore                    # Ignore unnecessary files
+│── 📂 docs/                       # Documentation
+│   │── Architecture.md            # This document
+│   │── Naming_Conventions.md      # Naming conventions guide
+│   │── README.md                  # Project overview
+│
+│── requirements.txt               # Python dependencies
+│── setup.py                        # Installation script
+│── .gitignore                      # Ignore unnecessary files
 ```
 
 ---
 
-## **4. System Components & Responsibilities**
+## **4. Centralized Logging & Error Handling**
 
-### **4.1 Application Layer**
+### **4.1 Logging System**
 
-- **Manages configurations** and **executes workflows**.
-- **Reads user settings** from `config.json`.
-- Acts as the **entry point** for system execution.
+A centralized logging system captures:  
+✅ **INFO logs** – General application workflow logs.  
+✅ **ERROR logs** – Captures critical failures.  
+✅ **DEBUG logs** – Useful for developers.  
+✅ **TEST logs** – Stores unit test results.
 
-### **4.2 Domain Layer**
+Example Log Entry (`auto_conveyor.log`):
 
-- Implements **video processing logic** using **DaVinci Resolve API**.
-- Tracks **processing progress** and **upload status**.
-- Handles **business rules** related to video rendering and metadata.
-- **Scene-Based Auto Color Grading**: Uses AI-based detection to adjust color grading per scene.
-- **Metadata Enrichment & Auto-Tagging**: Extracts relevant information for optimized YouTube discoverability.
-
-### **4.3 Infrastructure Layer**
-
-- **Monitors directories** for new videos.
-- **Interacts with external APIs** (DaVinci Resolve, YouTube).
-- **Handles external dependencies** like `watchdog`, `googleapiclient`, etc.
-
-### **4.4 Framework & Drivers Layer**
-
-- Runs as a **daemon/background process**.
-- Implements **error handling, retry mechanisms, and logging**.
-- **Multithreading Support**: Enables parallel video processing for efficiency.
-- **Checkpoint System**: Saves progress and resumes jobs after failures.
-
----
-
-## **5. Configuration & Adaptability**
-
-AutoConveyor is **easily configurable** via a `config.json` file:
-
-```json
-{
-  "watch_directory": "/videos/input/",
-  "output_directory": "/videos/output/",
-  "youtube_api_key": "YOUR_API_KEY",
-  "default_render_preset": "YouTube 1080p",
-  "resolve_version_check": true,
-  "multithreading_enabled": true,
-  "checkpointing_enabled": true,
-  "auto_color_grading": true,
-  "metadata_enrichment": true
-}
+```plaintext
+[2025-03-13 14:45:32] INFO - New video detected: sample_video.mp4
+[2025-03-13 14:45:35] ERROR - Failed to process video: sample_video.mp4 - TimeoutError
+[2025-03-13 14:45:37] DEBUG - Retrying video processing...
 ```
 
-- **Auto-adapts** to newer versions of DaVinci Resolve.
-- **Future-ready design** allows for easy plugin integration.
+---
+
+### **4.2 Error Handling Strategy**
+
+1️⃣ **Try-Catch Blocks** – Prevents system crashes.  
+2️⃣ **Automatic Retries** – Handles temporary failures.  
+3️⃣ **Failsafe Mode** – Skips problematic videos and continues processing.  
+4️⃣ **Alerts & Logs** – Saves issues to `error.log` for later debugging.
 
 ---
 
-## **6. Included Features & Scalability**
+## **5. Automated Testing**
 
-### **6.1 Features Implemented in This Version**
+✅ **Unit Tests** – Test individual functions (e.g., scene detection).  
+✅ **Integration Tests** – Ensure modules work together (e.g., full workflow).  
+✅ **Test Reports** – Results stored in `logs/test_reports.log`.
 
-✔ **Multithreading** – Support for multiple concurrent video tasks.  
-✔ **Checkpoint System** – Resume processing after failures or interruptions.  
-✔ **Automated Tagging & Metadata Enrichment** – Enhances YouTube discoverability.  
-✔ **Scene-Based Auto Color Grading** – AI-based adjustments per scene.
+---
 
-### **6.2 Future Enhancements**
+## **6. Automation Scripts**
 
-🚀 **Parallel Processing Across Machines** – Distribute tasks across multiple nodes.  
-🚀 **Web Dashboard** – Live tracking of processing & upload status.  
-🚀 **Batch Upload Scheduling** – Optimize YouTube posting for engagement.  
-🚀 **Cloud Integration** – Deploy processing in **AWS/GCP/Azure** for enhanced performance.  
-🚀 **Containerization** – Use **Docker** for easy deployment across platforms.
+📌 `cleanup.py` – Deletes old processed videos and logs to free space.  
+📌 `batch_process.py` – Automates batch processing of multiple files.  
+📌 `reprocess_failed.py` – Detects failed jobs and reattempts processing.
 
 ---
 
 ## **7. Conclusion**
 
-AutoConveyor is built to be a **robust, scalable, and future-ready solution** for **automated video processing**. Its modular architecture ensures easy **maintenance, adaptability, and expansion** for future needs.
+AutoConveyor now has **a complete hybrid modular-layered architecture** with:  
+✔ **Scalability** for new features.  
+✔ **Reliability** via logging, error handling, and retry mechanisms.  
+✔ **Automation** for streamlined workflow and maintenance.
+
+This **final architecture** ensures that AutoConveyor is **production-ready, future-proof, and adaptable** 🚀.
